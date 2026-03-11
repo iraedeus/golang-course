@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // RepoInfo holds the key information about a GitHub repository.
@@ -61,13 +62,26 @@ func getRepo(owner string, repoName string) (*RepoInfo, error) {
 	return &info, nil
 }
 
+// formatTime parses a GitHub API date string and returns a formatted date string.
+// If parsing fails, it returns the original string.
+func formatTime(dateStr string) string {
+	t, err := time.Parse(time.RFC3339, dateStr)
+	if err != nil {
+		return dateStr
+	}
+
+	return t.Format("15:04:05 02.01.2006")
+}
+
 // printRepoInfo formats and prints the repository details to the standard output.
 func printRepoInfo(repoInfo *RepoInfo) {
+	formattedTime := formatTime(repoInfo.CreatedAt)
+
 	fmt.Printf("Name: %s\n", repoInfo.Name)
 	fmt.Printf("Description: %s\n", repoInfo.Description)
 	fmt.Printf("Stars: %d\n", repoInfo.Stars)
 	fmt.Printf("Number of forks: %d\n", repoInfo.ForksCount)
-	fmt.Printf("CreatedAt: %s\n", repoInfo.CreatedAt)
+	fmt.Printf("CreatedAt: %s\n", formattedTime)
 }
 
 func main() {
