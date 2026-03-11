@@ -19,19 +19,23 @@ type RepoInfo struct {
 }
 
 // parseInput extracts the owner and repository name from the input string.
-// It supports both "owner/repo" format and full GitHub URLs.
-func parseInput(input string) (string, string) {
-	input = strings.TrimSuffix(input, "/")
-	parts := strings.Split(input, "/")
-
-	if len(parts) < 2 {
-		return "", ""
+// It supports two formats: "owner/repo" and "https://github.com/owner/repo".
+func parseInput(input string) (string, string, error) {
+	if strings.Contains(input, "github.com/") {
+		parts := strings.Split(input, "github.com/")
+		if len(parts) < 2 {
+			return "", "", fmt.Errorf("invalid URL format")
+		}
+		input = parts[1]
 	}
 
-	repo := parts[len(parts)-1]
-	owner := parts[len(parts)-2]
+	parts := strings.Split(strings.TrimSuffix(input, "/"), "/")
 
-	return owner, repo
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("invalid format, expected 'owner/repo' or GitHub URL")
+	}
+
+	return parts[0], parts[1], nil
 }
 
 // getRepo makes an HTTP GET request to the GitHub API to fetch repository details.
@@ -75,7 +79,12 @@ func main() {
 		return
 	}
 
-	owner, repoName := parseInput(*repoID)
+	owner, repoName, err := parseInput(*repoID)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
 	repoInfo, err := getRepo(owner, repoName)
 	if err != nil {
 		fmt.Println("Error:", err)
