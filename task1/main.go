@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// RepoInfo holds the key information about a GitHub repository.
+// It includes JSON tags for automatic unmarshaling from the GitHub API.
 type RepoInfo struct {
 	Name        string `json:"full_name"`
 	Description string `json:"description"`
@@ -16,6 +18,8 @@ type RepoInfo struct {
 	CreatedAt   string `json:"created_at"`
 }
 
+// parseInput extracts the owner and repository name from the input string.
+// It supports both "owner/repo" format and full GitHub URLs.
 func parseInput(input string) (string, string) {
 	input = strings.TrimSuffix(input, "/")
 	parts := strings.Split(input, "/")
@@ -30,6 +34,8 @@ func parseInput(input string) (string, string) {
 	return owner, repo
 }
 
+// getRepo makes an HTTP GET request to the GitHub API to fetch repository details.
+// It returns a pointer to RepoInfo upon success, or an error if the request fails.
 func getRepo(owner string, repoName string) (*RepoInfo, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", owner, repoName)
 	resp, err := http.Get(url)
@@ -51,6 +57,7 @@ func getRepo(owner string, repoName string) (*RepoInfo, error) {
 	return &info, nil
 }
 
+// printRepoInfo formats and prints the repository details to the standard output.
 func printRepoInfo(repoInfo *RepoInfo) {
 	fmt.Printf("Name: %s\n", repoInfo.Name)
 	fmt.Printf("Description: %s\n", repoInfo.Description)
