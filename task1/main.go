@@ -10,7 +10,6 @@ import (
 )
 
 // RepoInfo holds the key information about a GitHub repository.
-// It includes JSON tags for automatic unmarshaling from the GitHub API.
 type RepoInfo struct {
 	Name        string `json:"full_name"`
 	Description string `json:"description"`
@@ -40,26 +39,26 @@ func parseInput(input string) (string, string, error) {
 }
 
 // getRepo makes an HTTP GET request to the GitHub API to fetch repository details.
-// It returns a pointer to RepoInfo upon success, or an error if the request fails.
-func getRepo(owner string, repoName string) (*RepoInfo, error) {
+// It returns a RepoInfo upon success, or an error if the request fails.
+func getRepo(owner string, repoName string) (RepoInfo, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", owner, repoName)
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return RepoInfo{}, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("repository not found (status code: %d)", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		return RepoInfo{}, fmt.Errorf("repository not found (status code: %d)", resp.StatusCode)
 	}
 
 	var info RepoInfo
 	err = json.NewDecoder(resp.Body).Decode(&info)
 	if err != nil {
-		return nil, err
+		return RepoInfo{}, err
 	}
 
-	return &info, nil
+	return info, nil
 }
 
 // formatTime parses a GitHub API date string and returns a formatted date string.
@@ -73,18 +72,21 @@ func formatTime(dateStr string) string {
 	return t.Format("15:04:05 02.01.2006")
 }
 
-// printRepoInfo formats and prints the repository details to the standard output.
-func printRepoInfo(repoInfo *RepoInfo) {
-	formattedTime := formatTime(repoInfo.CreatedAt)
+func (r RepoInfo) String() string {
+	formattedTime := formatTime(r.CreatedAt)
 
-	fmt.Printf("Name: %s\n", repoInfo.Name)
-	fmt.Printf("Description: %s\n", repoInfo.Description)
-	fmt.Printf("Stars: %d\n", repoInfo.Stars)
-	fmt.Printf("Number of forks: %d\n", repoInfo.ForksCount)
-	fmt.Printf("CreatedAt: %s\n", formattedTime)
+	return fmt.Sprintf(
+		"Info about repository: %s\nName: %s\nDescription: %s\nStars: %d\nNumber of forks: %d\nCreatedAt: %s",
+		r.Name, r.Name, r.Description, r.Stars, r.ForksCount, formattedTime,
+	)
 }
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: go run main.go -repo <owner/repo>\n")
+		flag.PrintDefaults()
+	}
+
 	repoID := flag.String("repo", "", "GitHub repository name")
 	flag.Parse()
 
@@ -104,6 +106,5 @@ func main() {
 		fmt.Println("Error:", err)
 		return
 	}
-	fmt.Printf("Info about repository: %s\n\n", *repoID)
-	printRepoInfo(repoInfo)
+	fmt.Println(repoInfo)
 }
