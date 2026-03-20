@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package github; 
+
+option go_package = "golang-course/api/proto";
+service GithubService {
+  rpc GetRepository (RepositoryRequest) returns (RepositoryResponse);
+}
+
+message RepositoryRequest {
+  string owner = 1;
+  string repo_name = 2;
+}
+
+message RepositoryResponse {
+  string name = 1;
+  string description = 2;
+  int32 stars = 3;
+  int32 forks_count = 4;
+  string created_at = 5;
+}
