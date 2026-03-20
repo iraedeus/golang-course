@@ -1,0 +1,71 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample server for fetching GitHub repo info.",
+        "title": "GitHub Info API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/repo": {
+            "get": {
+                "description": "Get stars, forks and description of a repo",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "repository"
+                ],
+                "summary": "Get GitHub repository info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Repository Owner",
+                        "name": "owner",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Repository Name",
+                        "name": "repo",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/proto.RepositoryResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "proto.RepositoryResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "forks": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stars": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}
