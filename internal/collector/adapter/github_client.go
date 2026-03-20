@@ -16,6 +16,7 @@ type repoDTO struct {
 	CreatedAt   string `json:"created_at"`
 }
 
+// GitHubAdapter is responsible for communicating with the official GitHub REST API
 type GitHubAdapter struct {
 	httpClient *http.Client
 }
@@ -26,6 +27,8 @@ func NewGitHubAdapter() *GitHubAdapter {
 	}
 }
 
+// GetRepoInfo fetches repository details from GitHub and maps them to the domain model.
+// It returns an error if the repository is not found or the API is unavailable.
 func (a *GitHubAdapter) GetRepoInfo(owner, repoName string) (domain.Repo, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", owner, repoName)
 
