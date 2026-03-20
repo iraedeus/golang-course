@@ -83,7 +83,7 @@ func (r RepoInfo) String() string {
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage: go run main.go -repo <owner/repo>\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: go run cmd/github-tool/main.go -repo <owner/repo>\n")
 		flag.PrintDefaults()
 	}
 
