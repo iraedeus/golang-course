@@ -16,6 +16,6 @@ message RepositoryResponse {
   string name = 1;
   string description = 2;
   int32 stars = 3;
-  int32 forks_count = 4;
+  int32 forks = 4;
   string created_at = 5;
 }

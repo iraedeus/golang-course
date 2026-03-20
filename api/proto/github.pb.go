@@ -7,11 +7,12 @@
 package proto
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -78,7 +79,7 @@ type RepositoryResponse struct {
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	Stars         int32                  `protobuf:"varint,3,opt,name=stars,proto3" json:"stars,omitempty"`
-	ForksCount    int32                  `protobuf:"varint,4,opt,name=forks_count,json=forksCount,proto3" json:"forks_count,omitempty"`
+	Forks         int32                  `protobuf:"varint,4,opt,name=forks,proto3" json:"forks,omitempty"`
 	CreatedAt     string                 `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -135,9 +136,9 @@ func (x *RepositoryResponse) GetStars() int32 {
 	return 0
 }
 
-func (x *RepositoryResponse) GetForksCount() int32 {
+func (x *RepositoryResponse) GetForks() int32 {
 	if x != nil {
-		return x.ForksCount
+		return x.Forks
 	}
 	return 0
 }
@@ -156,13 +157,12 @@ const file_api_proto_github_proto_rawDesc = "" +
 	"\x16api/proto/github.proto\x12\x06github\"F\n" +
 	"\x11RepositoryRequest\x12\x14\n" +
 	"\x05owner\x18\x01 \x01(\tR\x05owner\x12\x1b\n" +
-	"\trepo_name\x18\x02 \x01(\tR\brepoName\"\xa0\x01\n" +
+	"\trepo_name\x18\x02 \x01(\tR\brepoName\"\x95\x01\n" +
 	"\x12RepositoryResponse\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x14\n" +
-	"\x05stars\x18\x03 \x01(\x05R\x05stars\x12\x1f\n" +
-	"\vforks_count\x18\x04 \x01(\x05R\n" +
-	"forksCount\x12\x1d\n" +
+	"\x05stars\x18\x03 \x01(\x05R\x05stars\x12\x14\n" +
+	"\x05forks\x18\x04 \x01(\x05R\x05forks\x12\x1d\n" +
 	"\n" +
 	"created_at\x18\x05 \x01(\tR\tcreatedAt2W\n" +
 	"\rGithubService\x12F\n" +
@@ -180,11 +180,14 @@ func file_api_proto_github_proto_rawDescGZIP() []byte {
 	return file_api_proto_github_proto_rawDescData
 }
 
-var file_api_proto_github_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_api_proto_github_proto_goTypes = []any{
-	(*RepositoryRequest)(nil),  // 0: github.RepositoryRequest
-	(*RepositoryResponse)(nil), // 1: github.RepositoryResponse
-}
+var (
+	file_api_proto_github_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+	file_api_proto_github_proto_goTypes  = []any{
+		(*RepositoryRequest)(nil),  // 0: github.RepositoryRequest
+		(*RepositoryResponse)(nil), // 1: github.RepositoryResponse
+	}
+)
+
 var file_api_proto_github_proto_depIdxs = []int32{
 	0, // 0: github.GithubService.GetRepository:input_type -> github.RepositoryRequest
 	1, // 1: github.GithubService.GetRepository:output_type -> github.RepositoryResponse
