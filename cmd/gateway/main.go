@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"golang-course/internal/gateway/client"
 	"golang-course/internal/gateway/handler"
@@ -18,7 +19,12 @@ import (
 // @host            localhost:8080
 // @BasePath        /
 func main() {
-	collectorClient, err := client.NewCollectorClient("localhost:50051")
+	collectorAddr := os.Getenv("COLLECTOR_ADDR")
+	if collectorAddr == "" {
+		collectorAddr = "localhost:50051"
+	}
+
+	collectorClient, err := client.NewCollectorClient(collectorAddr)
 	if err != nil {
 		log.Fatalf("could not connect to collector: %v", err)
 	}
