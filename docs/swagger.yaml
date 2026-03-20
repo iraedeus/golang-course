@@ -1,0 +1,47 @@
+basePath: /
+definitions:
+  proto.RepositoryResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      forks:
+        type: integer
+      name:
+        type: string
+      stars:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample server for fetching GitHub repo info.
+  title: GitHub Info API
+  version: "1.0"
+paths:
+  /repo:
+    get:
+      description: Get stars, forks and description of a repo
+      parameters:
+      - description: Repository Owner
+        in: query
+        name: owner
+        required: true
+        type: string
+      - description: Repository Name
+        in: query
+        name: repo
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/proto.RepositoryResponse'
+      summary: Get GitHub repository info
+      tags:
+      - repository
+swagger: "2.0"
