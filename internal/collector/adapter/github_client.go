@@ -6,6 +6,9 @@ import (
 	"net/http"
 
 	"golang-course/internal/collector/domain"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type repoDTO struct {
@@ -39,7 +42,10 @@ func (a *GitHubAdapter) GetRepoInfo(owner, repoName string) (domain.Repo, error)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return domain.Repo{}, fmt.Errorf("repository not found (status code: %d)", resp.StatusCode)
+		if resp.StatusCode == http.StatusNotFound {
+			return domain.Repo{}, status.Error(codes.NotFound, "repository not found on GitHub")
+		}
+		return domain.Repo{}, fmt.Errorf("github api error: %d", resp.StatusCode)
 	}
 
 	var repo repoDTO
