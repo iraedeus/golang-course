@@ -2,14 +2,14 @@ services:
   collector:
     build:
       context: .
-      dockerfile: Dockerfile.collector
+      dockerfile: collector/Dockerfile.collector
     ports:
       - "50051:50051"
 
   gateway:
     build:
       context: .
-      dockerfile: Dockerfile.gateway
+      dockerfile: gateway/Dockerfile.gateway
     ports:
       - "8080:8080"
     depends_on:

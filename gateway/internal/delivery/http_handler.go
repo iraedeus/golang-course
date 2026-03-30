@@ -1,22 +1,24 @@
-package handler
+package delivery
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
-	"golang-course/internal/gateway/client"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"golang-course/gateway/internal/domain"
 )
 
-type HttpHandler struct {
-	collectorClient *client.CollectorClient
+type GatewayUseCase interface {
+	Execute(owner, repo string) (domain.Repo, error)
 }
 
-func NewHttpHandler(c *client.CollectorClient) *HttpHandler {
+type HttpHandler struct {
+	useCase GatewayUseCase
+}
+
+func NewHttpHandler(uc GatewayUseCase) *HttpHandler {
 	return &HttpHandler{
-		collectorClient: c,
+		useCase: uc,
 	}
 }
 
@@ -38,14 +40,13 @@ func (h *HttpHandler) GetRepository(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.collectorClient.GetRepo(owner, repoName)
+	resp, err := h.useCase.Execute(owner, repoName)
 	if err != nil {
-		st, ok := status.FromError(err)
-		if ok && st.Code() == codes.NotFound {
+		if errors.Is(err, domain.ErrNotFound) {
 			http.Error(w, "Repository not found", http.StatusNotFound)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 

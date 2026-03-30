@@ -5,21 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"golang-course/internal/collector/domain"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"golang-course/collector/internal/domain"
 )
 
-type repoDTO struct {
-	Name        string `json:"full_name"`
-	Description string `json:"description"`
-	Stars       int    `json:"stargazers_count"`
-	Forks       int    `json:"forks_count"`
-	CreatedAt   string `json:"created_at"`
-}
-
-// GitHubAdapter is responsible for communicating with the official GitHub REST API
 type GitHubAdapter struct {
 	httpClient *http.Client
 }
@@ -30,12 +18,10 @@ func NewGitHubAdapter() *GitHubAdapter {
 	}
 }
 
-// GetRepoInfo fetches repository details from GitHub and maps them to the domain model.
-// It returns an error if the repository is not found or the API is unavailable.
-func (a *GitHubAdapter) GetRepoInfo(owner, repoName string) (domain.Repo, error) {
+func (a *GitHubAdapter) GetRepoInfo(owner string, repoName string) (domain.Repo, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", owner, repoName)
 
-	resp, err := http.Get(url)
+	resp, err := a.httpClient.Get(url)
 	if err != nil {
 		return domain.Repo{}, err
 	}
@@ -43,7 +29,7 @@ func (a *GitHubAdapter) GetRepoInfo(owner, repoName string) (domain.Repo, error)
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusNotFound {
-			return domain.Repo{}, status.Error(codes.NotFound, "repository not found on GitHub")
+			return domain.Repo{}, domain.ErrNoFound
 		}
 		return domain.Repo{}, fmt.Errorf("github api error: %d", resp.StatusCode)
 	}

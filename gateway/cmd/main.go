@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"os"
 
-	"golang-course/internal/gateway/client"
-	"golang-course/internal/gateway/handler"
+	"golang-course/gateway/internal/adapter"
+	"golang-course/gateway/internal/delivery"
+	"golang-course/gateway/internal/usecase"
 
 	_ "golang-course/docs"
 
@@ -24,14 +25,15 @@ func main() {
 		collectorAddr = "localhost:50051"
 	}
 
-	collectorClient, err := client.NewCollectorClient(collectorAddr)
+	grpcClient, err := adapter.NewCollectorGrpcClient(collectorAddr)
 	if err != nil {
 		log.Fatalf("could not connect to collector: %v", err)
 	}
 
-	h := handler.NewHttpHandler(collectorClient)
-	http.HandleFunc("/repo", h.GetRepository)
+	gatewayUC := usecase.NewGatewayUseCase(grpcClient)
+	httpHandler := delivery.NewHttpHandler(gatewayUC)
 
+	http.HandleFunc("/repo", httpHandler.GetRepository)
 	http.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	log.Println("Gateway service is running on port :8080...")

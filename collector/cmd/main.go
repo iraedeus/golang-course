@@ -5,9 +5,9 @@ import (
 	"net"
 
 	"golang-course/api/proto"
-	"golang-course/internal/collector/adapter"
-	"golang-course/internal/collector/handler"
-	"golang-course/internal/collector/usecase"
+	"golang-course/collector/internal/adapter"
+	"golang-course/collector/internal/delivery"
+	"golang-course/collector/internal/usecase"
 
 	"google.golang.org/grpc"
 )
@@ -15,7 +15,7 @@ import (
 func main() {
 	githubAdapter := adapter.NewGitHubAdapter()
 	collectorUC := usecase.NewCollectorUseCase(githubAdapter)
-	grpcHandler := handler.NewGrpcHandler(collectorUC)
+	grpcHandler := delivery.NewGrpcHandler(collectorUC)
 
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
