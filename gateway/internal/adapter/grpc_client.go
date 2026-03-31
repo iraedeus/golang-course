@@ -13,6 +13,7 @@ import (
 )
 
 type CollectorGrpcClient struct {
+	conn       *grpc.ClientConn
 	grpcClient proto.GithubServiceClient
 }
 
@@ -23,6 +24,7 @@ func NewCollectorGrpcClient(address string) (*CollectorGrpcClient, error) {
 	}
 
 	return &CollectorGrpcClient{
+		conn:       conn,
 		grpcClient: proto.NewGithubServiceClient(conn),
 	}, nil
 }
@@ -48,4 +50,8 @@ func (c *CollectorGrpcClient) GetRepo(owner, repo string) (domain.Repo, error) {
 		Forks:       int(resp.Forks),
 		CreatedAt:   resp.CreatedAt,
 	}, nil
+}
+
+func (c *CollectorGrpcClient) Close() error {
+	return c.conn.Close()
 }
