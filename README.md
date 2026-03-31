@@ -1,35 +1,31 @@
 # GitHub Info Distributed System
 
-A distributed microservices system built with **Golang** to fetch and display GitHub repository information. This project is an evolution of a CLI tool into a production-ready architecture following **Clean Architecture** principles.
+A distributed microservices system built with **Golang (1.25+)** to fetch and display GitHub repository information. This project is a production-ready architecture following **Clean Architecture** principles.
 
 ## 🏗 System Architecture
 
 The system consists of two decoupled microservices interacting via high-performance **gRPC**:
 
-1.  **Collector Service**:
-    *   **Role**: Internal data provider.
-    *   **Transport**: gRPC Server.
-    *   **Logic**: Encapsulates GitHub API interaction.
-    *   **Architecture**: Divided into layers: **Domain**, **Use Cases**, **Adapters** (GitHub client), and **Handlers** (gRPC server).
+1.  **Collector Service** (Internal):
+    *   **Role**: Internal data provider encapsulating GitHub API interactions.
+    *   **Transport**: gRPC Server (Port `50051`).
+    *   **Architecture**: Structured into `adapter` (GitHub client), `delivery` (gRPC controller), `domain`, and `usecase`. Includes custom data formatting (e.g., parsing RFC3339 dates).
 
-2.  **API Gateway**:
-    *   **Role**: Public entry point ("The Waiter").
-    *   **Transport**: REST Server (HTTP) & gRPC Client.
-    *   **Logic**: Receives external HTTP requests, forwards them to the Collector via gRPC, and returns JSON.
-    *   **Features**: Automated Swagger (OpenAPI) documentation and intelligent error mapping (e.g., gRPC `NotFound` -> HTTP `404`).
+2.  **API Gateway** (Public):
+    *   **Role**: Public entry point for users/clients.
+    *   **Transport**: REST Server (HTTP Port `8080`) & gRPC Client.
+    *   **Logic**: Receives external HTTP requests, forwards them to the Collector via gRPC, and returns the response in JSON format.
 
 ### Interaction Flow:
-`User -> [REST/HTTP] -> API Gateway -> [gRPC] -> Collector -> [REST/HTTPS] -> GitHub API`
+`User -> [HTTP GET] -> API Gateway -> [gRPC] -> Collector -> [HTTPS] -> GitHub API`
 
 ---
 
-## 🛠 Tech Stack
-
-*   **Go (Golang)**: Core language.
-*   **gRPC & Protocol Buffers**: Internal service communication.
-*   **Swagger (swag)**: Automated API documentation.
-*   **Docker & Docker Compose**: Containerization and orchestration.
-*   **Clean Architecture**: Separation of concerns for maintainability.
+## ✨ Key Features
+*   **Clean Architecture**: Strict separation of concerns (`Domain` -> `UseCase` -> `Adapter`/`Delivery`) in both services.
+*   **Graceful Shutdown**: Both HTTP and gRPC servers correctly handle `SIGINT`/`SIGTERM` signals with configurable timeouts.
+*   **Intelligent Error Mapping**: Translates GitHub HTTP errors to gRPC status codes (e.g., `codes.NotFound`), which the Gateway maps back to standard HTTP codes (`404 Not Found`).
+*   **Automated Documentation**: Integrated Swagger UI for testing REST endpoints.
 
 ---
 
@@ -37,18 +33,18 @@ The system consists of two decoupled microservices interacting via high-performa
 
 ```text
 .
-├── api/proto/          # gRPC contract definitions (.proto files)
-├── cmd/                # Entry points (main.go) for each service
-│   ├── collector/
-│   └── gateway/
-├── docs/               # Auto-generated Swagger documentation
-├── internal/           # Private application code
-│   ├── collector/      # Domain, UseCase, Adapter, Handler layers
-│   └── gateway/        # Client and REST Handler layers
-├── Dockerfile.collector
-├── Dockerfile.gateway
+├── api/
+│   ├── proto/          # gRPC contracts (.proto and generated .pb.go files)
+│   └── swagger/        # Auto-generated OpenAPI/Swagger documentation
+├── collector/          # Collector Microservice
+│   ├── cmd/            # Entry point (main.go)
+│   └── internal/       # Core logic (adapter, config, delivery, domain, usecase)
+├── gateway/            # API Gateway Microservice
+│   ├── cmd/            # Entry point (main.go)
+│   └── internal/       # Core logic (adapter, config, delivery, domain, usecase)
 ├── docker-compose.yaml # Orchestration for one-command startup
-└── go.mod              # Project dependencies
+├── go.mod              # Dependencies (Go 1.25.7)
+└── README.md
 ```
 
 ---
@@ -67,30 +63,48 @@ The services will be available at:
 *   **Swagger UI**: `http://localhost:8080/swagger/index.html`
 
 ### 2. Run Locally (Manual)
-First, start the Collector:
+First, start the Collector service:
 ```bash
-go run cmd/collector/main.go
+go run collector/cmd/main.go
 ```
 
-Then, in a separate terminal, start the Gateway:
+Then, in a separate terminal, start the API Gateway:
 ```bash
-go run cmd/gateway/main.go
+go run gateway/cmd/main.go
 ```
 
 ---
 
-## 📖 API Documentation
+## 📖 API Documentation (Swagger)
 
 The system provides a built-in Swagger interface for easy testing. 
 
 1.  Open `http://localhost:8080/swagger/index.html` in your browser.
 2.  Use the `GET /repo` endpoint.
-3.  Parameters: `owner` (e.g., `google`) and `repo` (e.g., `go`).
+3.  **Query Parameters**: 
+    *   `owner` (e.g., `google`) 
+    *   `repo` (e.g., `go`)
 
-### Error Mapping
-The Gateway automatically translates internal gRPC errors into standard HTTP codes:
+**Example Request**:
+```bash
+curl -X GET "http://localhost:8080/repo?owner=google&repo=go"
+```
+
+**Example Response**:
+```json
+{
+  "name": "google/go",
+  "description": "The Go programming language",
+  "stars": 120500,
+  "forks": 17000,
+  "created_at": "15:04:05 02.01.06"
+}
+```
+
+### Error Handling
+The Gateway translates internal gRPC errors into standard HTTP codes:
 *   `200 OK`: Success.
-*   `400 Bad Request`: Missing query parameters.
+*   `400 Bad Request`: Missing `owner` or `repo` query parameters.
 *   `404 Not Found`: Repository does not exist on GitHub.
 *   `500 Internal Server Error`: Connection issues or API rate limits.
 
@@ -98,11 +112,13 @@ The Gateway automatically translates internal gRPC errors into standard HTTP cod
 
 ## 🛠 Development Commands
 
+If you change the `.proto` files or the Swagger annotations, run the following commands to regenerate the code:
+
 *   **Generate gRPC Code**:
     ```bash
     protoc --go_out=. --go-grpc_out=. api/proto/github.proto
     ```
 *   **Update Swagger Docs**:
     ```bash
-    swag init -g cmd/gateway/main.go
+    swag init -g gateway/cmd/main.go -o api/swagger
     ```
