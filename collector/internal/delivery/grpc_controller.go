@@ -15,18 +15,18 @@ type RepoUseCase interface {
 	Execute(owner string, repoName string) (domain.Repo, error)
 }
 
-type GrpcHandler struct {
+type GrpcController struct {
 	useCase RepoUseCase
 	proto.UnimplementedGithubServiceServer
 }
 
-func NewGrpcHandler(uc RepoUseCase) *GrpcHandler {
-	return &GrpcHandler{
+func NewGrpcController(uc RepoUseCase) *GrpcController {
+	return &GrpcController{
 		useCase: uc,
 	}
 }
 
-func (h *GrpcHandler) GetRepository(ctx context.Context, req *proto.RepositoryRequest) (*proto.RepositoryResponse, error) {
+func (h *GrpcController) GetRepository(ctx context.Context, req *proto.RepositoryRequest) (*proto.RepositoryResponse, error) {
 	repo, err := h.useCase.Execute(req.GetOwner(), req.GetRepoName())
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {

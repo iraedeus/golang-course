@@ -18,7 +18,7 @@ func main() {
 
 	githubAdapter := adapter.NewGitHubAdapter()
 	collectorUC := usecase.NewCollectorUseCase(githubAdapter)
-	grpcHandler := delivery.NewGrpcHandler(collectorUC)
+	grpcController := delivery.NewGrpcController(collectorUC)
 
 	port := ":" + cfg.GRPCPort
 
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	proto.RegisterGithubServiceServer(grpcServer, grpcHandler)
+	proto.RegisterGithubServiceServer(grpcServer, grpcController)
 
 	log.Printf("Collector service is running on port %s...", port)
 

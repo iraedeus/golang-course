@@ -6,7 +6,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-func NewRouter(h *HttpHandler) http.Handler {
+func NewRouter(h *HTTPController) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repo", h.GetRepository)
 	mux.HandleFunc("/swagger/", httpSwagger.WrapHandler)

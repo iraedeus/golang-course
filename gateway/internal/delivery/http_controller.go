@@ -12,12 +12,12 @@ type GatewayUseCase interface {
 	Execute(owner, repo string) (domain.Repo, error)
 }
 
-type HttpHandler struct {
+type HTTPController struct {
 	useCase GatewayUseCase
 }
 
-func NewHttpHandler(uc GatewayUseCase) *HttpHandler {
-	return &HttpHandler{
+func NewHTTPController(uc GatewayUseCase) *HTTPController {
+	return &HTTPController{
 		useCase: uc,
 	}
 }
@@ -31,7 +31,7 @@ func NewHttpHandler(uc GatewayUseCase) *HttpHandler {
 // @Param        repo    query      string  true  "Repository Name"
 // @Success      200     {object}   proto.RepositoryResponse
 // @Router       /repo [get]
-func (h *HttpHandler) GetRepository(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPController) GetRepository(w http.ResponseWriter, r *http.Request) {
 	owner := r.URL.Query().Get("owner")
 	repoName := r.URL.Query().Get("repo")
 

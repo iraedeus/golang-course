@@ -29,7 +29,7 @@ func main() {
 	}
 
 	gatewayUC := usecase.NewGatewayUseCase(grpcClient)
-	httpHandler := delivery.NewHttpHandler(gatewayUC)
+	httpHandler := delivery.NewHTTPController(gatewayUC)
 
 	router := delivery.NewRouter(httpHandler)
 
