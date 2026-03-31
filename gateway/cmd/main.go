@@ -9,8 +9,6 @@ import (
 	"golang-course/gateway/internal/config"
 	"golang-course/gateway/internal/delivery"
 	"golang-course/gateway/internal/usecase"
-
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // @title           GitHub Info API
@@ -33,14 +31,13 @@ func main() {
 	gatewayUC := usecase.NewGatewayUseCase(grpcClient)
 	httpHandler := delivery.NewHttpHandler(gatewayUC)
 
-	http.HandleFunc("/repo", httpHandler.GetRepository)
-	http.Handle("/swagger/", httpSwagger.WrapHandler)
+	router := delivery.NewRouter(httpHandler)
 
 	log.Printf("Gateway service is running on port %s...", port)
 	log.Printf("Collector address: %s", collectorAddr)
 	log.Printf("Swagger documentation is available at http://localhost:%s/swagger/index.html", port)
 
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, router); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
