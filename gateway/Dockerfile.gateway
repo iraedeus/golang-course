@@ -12,7 +12,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /gateway-app ./gateway/cmd
 FROM scratch
 
 COPY --from=builder /gateway-app /gateway-app
-COPY --from=builder /app/docs /docs
 
 EXPOSE 8080
 

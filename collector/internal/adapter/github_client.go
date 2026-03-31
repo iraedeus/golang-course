@@ -29,7 +29,7 @@ func (a *GitHubAdapter) GetRepoInfo(owner string, repoName string) (domain.Repo,
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusNotFound {
-			return domain.Repo{}, domain.ErrNoFound
+			return domain.Repo{}, domain.ErrNotFound
 		}
 		return domain.Repo{}, fmt.Errorf("github api error: %d", resp.StatusCode)
 	}

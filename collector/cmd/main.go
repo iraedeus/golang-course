@@ -6,6 +6,7 @@ import (
 
 	"golang-course/api/proto"
 	"golang-course/collector/internal/adapter"
+	"golang-course/collector/internal/config"
 	"golang-course/collector/internal/delivery"
 	"golang-course/collector/internal/usecase"
 
@@ -13,20 +14,23 @@ import (
 )
 
 func main() {
+	cfg := config.Load()
+
 	githubAdapter := adapter.NewGitHubAdapter()
 	collectorUC := usecase.NewCollectorUseCase(githubAdapter)
 	grpcHandler := delivery.NewGrpcHandler(collectorUC)
 
-	lis, err := net.Listen("tcp", ":50051")
+	port := ":" + cfg.GRPCPort
+
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("failed to listen on %s: %v", port, err)
 	}
 
 	grpcServer := grpc.NewServer()
-
 	proto.RegisterGithubServiceServer(grpcServer, grpcHandler)
 
-	log.Println("Collector service is running on port :50051...")
+	log.Printf("Collector service is running on port %s...", port)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

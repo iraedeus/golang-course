@@ -3,13 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
+	docs "golang-course/api/swagger"
 	"golang-course/gateway/internal/adapter"
+	"golang-course/gateway/internal/config"
 	"golang-course/gateway/internal/delivery"
 	"golang-course/gateway/internal/usecase"
-
-	_ "golang-course/docs"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -20,10 +19,11 @@ import (
 // @host            localhost:8080
 // @BasePath        /
 func main() {
-	collectorAddr := os.Getenv("COLLECTOR_ADDR")
-	if collectorAddr == "" {
-		collectorAddr = "localhost:50051"
-	}
+	cfg := config.Load()
+	port := cfg.HTTPPort
+	collectorAddr := cfg.CollectorAddr
+
+	docs.SwaggerInfo.Host = "localhost:" + port
 
 	grpcClient, err := adapter.NewCollectorGrpcClient(collectorAddr)
 	if err != nil {
@@ -36,10 +36,11 @@ func main() {
 	http.HandleFunc("/repo", httpHandler.GetRepository)
 	http.Handle("/swagger/", httpSwagger.WrapHandler)
 
-	log.Println("Gateway service is running on port :8080...")
-	log.Println("Swagger documentation is available at http://localhost:8080/swagger/index.html")
+	log.Printf("Gateway service is running on port %s...", port)
+	log.Printf("Collector address: %s", collectorAddr)
+	log.Printf("Swagger documentation is available at http://localhost:%s/swagger/index.html", port)
 
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }

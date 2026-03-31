@@ -5,6 +5,8 @@ services:
       dockerfile: collector/Dockerfile.collector
     ports:
       - "50051:50051"
+    environment:
+      - GRPC_PORT=50051
 
   gateway:
     build:
@@ -15,4 +17,5 @@ services:
     depends_on:
       - collector
     environment:
+      - HTTP_PORT=8080
       - COLLECTOR_ADDR=collector:50051

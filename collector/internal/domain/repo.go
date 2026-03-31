@@ -10,4 +10,4 @@ type Repo struct {
 	CreatedAt   string // Creation date in RFC3339 format
 }
 
-var ErrNoFound = errors.New("repository no found")
+var ErrNotFound = errors.New("repository no found")
