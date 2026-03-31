@@ -1,9 +1,13 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strconv"
+)
 
 type Config struct {
-	GRPCPort string
+	GRPCPort               string
+	ShutdownTimeoutSeconds int
 }
 
 func Load() Config {
@@ -12,7 +16,15 @@ func Load() Config {
 		port = "50051"
 	}
 
+	shutdownTimeout := 5
+	if v := os.Getenv("SHUTDOWN_TIMEOUT_SECONDS"); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil && parsed > 0 {
+			shutdownTimeout = parsed
+		}
+	}
+
 	return Config{
-		GRPCPort: port,
+		GRPCPort:               port,
+		ShutdownTimeoutSeconds: shutdownTimeout,
 	}
 }

@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"golang-course/api/proto"
 	"golang-course/collector/internal/adapter"
@@ -32,7 +36,37 @@ func main() {
 
 	log.Printf("Collector service is running on port %s...", port)
 
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	// Graceful shutdown
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	errCh := make(chan error, 1)
+
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			errCh <- err
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		log.Println("Collector: shutting down gracefully...")
+		done := make(chan struct{})
+
+		go func() {
+			grpcServer.GracefulStop()
+			close(done)
+		}()
+
+		select {
+		case <-done:
+			log.Println("Collector stopped successfully.")
+		case <-time.After(time.Duration(cfg.ShutdownTimeoutSeconds) * time.Second):
+			log.Println("Collector: Shutdown timeout reached. Forcing stop...")
+			grpcServer.Stop()
+		}
+	case err := <-errCh:
+		log.Fatalf("gRPC server failed: %v", err)
 	}
 }
