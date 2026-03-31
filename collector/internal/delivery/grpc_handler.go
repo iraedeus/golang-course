@@ -29,7 +29,7 @@ func NewGrpcHandler(uc RepoUseCase) *GrpcHandler {
 func (h *GrpcHandler) GetRepository(ctx context.Context, req *proto.RepositoryRequest) (*proto.RepositoryResponse, error) {
 	repo, err := h.useCase.Execute(req.GetOwner(), req.GetRepoName())
 	if err != nil {
-		if errors.Is(err, domain.ErrNoFound) {
+		if errors.Is(err, domain.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, "repository not found")
 		}
 		return nil, err
